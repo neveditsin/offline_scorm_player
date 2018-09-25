@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+<title>Offline SCORM player</title>
+
+<script src="js/2004/SCOBotUtil.js" type="text/javascript" charset="utf-8"></script>
+<script src="js/2004/SCOBotBase.js" type="text/javascript" charset="utf-8"></script>
+<script src="js/2004/ScormAPI.js" type="text/javascript" charset="utf-8"></script>
+
+<link rel="stylesheet" href="css/style.css">
+
+
+
+<script type="text/javascript">        
+    scorm = new SCOBotBase();
+
+	
+</script>
+
+
+<script type="text/javascript">
+
+
+
+(function(){
+		
+    	this.Funcs = {
+			
+			sendRq:function(user,module,call,ver,cmi)
+			{
+			    const dat = {
+					 user:user,
+					 module:module,
+					 api_call:call,
+					 ver:ver,
+					 cmi:cmi,
+					 wname:appWindow.name,
+				};
+				const Url="http://localhost:8080/lrs/scorm";
+				const Parameters={
+						headers:{
+							"content-type":"application/json; charset=UTF-8"
+						},
+						body:JSON.stringify(dat),
+						method:"PUT"
+				};
+				fetch(Url,Parameters)
+				.then(res=>{console.log(res)})
+				.catch(error=>console.log(error));
+			},
+
+			openWindow:function(winURL,winName,type,datafromlms)
+			{
+				if(decodeURI(type) === "SCORM 1.2"){
+					API = new SCOBOTAPIAdaptor12(decodeURI(datafromlms));
+				} else{
+					API_1484_11 = new SCOBot_API_1484_11(decodeURI(datafromlms));
+				}
+								
+				
+					
+				appWindow = window.open(winURL,winName,"width=800,height=600");
+				appWindow.moveTo(0,0);
+ 				//appWindow.addEventListener('unload', API.LMSFinish, true);
+ 				//appWindow.addEventListener('onbeforeunload', API.LMSFinish, false);
+				appWindow.focus();
+				return appWindow;
+			}			
+
+		}
+
+})();
+
+
+
+</script>
+
+
+
+
+
+</head>
+<body>
+
+<div id="header">
+	<h1>Offline SCORM player</h1>
+</div>
+
+<div>
+<a href="http://localhost:8080/lrs/scorm/report" class="button">Get Report</a>
+</div>
+
+<div>
+<$$generated$$>
+</div>
+
+</body>
+
+</html>

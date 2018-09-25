@@ -1,0 +1,1 @@
+jre/jre-8u181-linux-i586/jre1.8.0_181/bin/java -jar launcher-0.1.jar
