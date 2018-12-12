@@ -35,6 +35,7 @@ public class Launcher {
 	
 	private StringBuilder sb = new StringBuilder();
 	
+	//breadth first
 	public void travTree(Tree<Module> t) throws UnsupportedEncodingException {
 		sb.append("<ul>");		
 		if(t.data.link == null) {
