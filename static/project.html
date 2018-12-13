@@ -55,6 +55,7 @@
 						let a = document.createElement("a");
 						a.innerHTML = te.name;
 						a.setAttribute("onclick",`Funcs.openWindow(this, '${te.link}','${te.wname}','${te.type}','${te.data_from_lms}')`);
+						a.classList.add("toc_link");
 						//assume that sequence is sequence of elements in incoming json array
 						//later may get seq from json objects
 						a.id = "seq"+seq;
@@ -132,6 +133,13 @@
 			updateNavi:function(pg_id)
 			{
 				current_page = pg_id;
+								
+				sco_pages_seq.forEach(function(el) {
+					document.getElementById(el).style.fontWeight = "normal"
+				});
+				document.getElementById(current_page).style.fontWeight = "bold";
+				document.getElementById(current_page).style.color = "#813e83";
+				
 				let bf = document.getElementById('nav_first');
 				let bl = document.getElementById('nav_last');
 				let bp = document.getElementById('nav_prev');

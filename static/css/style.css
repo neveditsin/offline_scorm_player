@@ -11,8 +11,8 @@ div#header {
 
 
 
-a{
-    color: blue;
+.toc_link{
+	color: blue;
 	font-size: 80%;
 }
 a:link {
