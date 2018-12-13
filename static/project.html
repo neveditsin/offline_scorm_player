@@ -14,6 +14,8 @@
 
 <script type="text/javascript">
 	scorm = new SCOBotBase();
+	current_page = -1;
+	sco_pages_seq = [];
 </script>
 
 
@@ -28,19 +30,20 @@
 			{
 				const href = new URL(window.location.href);
 				const hash = href.searchParams.get("hash");
-				console.log(hash);
+				//console.log(hash);
 				const Url="http://localhost:8080/lrs/scanner/module?hash="+encodeURIComponent(hash);
 				const Parameters={
-						method:"GET"
+					method:"GET"
 				};
 				fetch(Url, Parameters)
 				.then(res => res.json())
 				.then((out) => {
-					console.log('Output: ', out);
+					console.log(out);
 					let toc = document.getElementById("toc");
 					let lev = 0;
 					let last_ul = parent_ul = root_ul = document.createElement("ul");
 					let first = true;
+					let seq = 0;
 					for(var i in out)
 					{
 						let te = out[i];
@@ -51,7 +54,12 @@
 						let name = te.name;
 						let a = document.createElement("a");
 						a.innerHTML = te.name;
-						a.setAttribute("onclick",`Funcs.openWindow('${te.link}','${te.wname}','${te.type}','${te.data_from_lms}')`);
+						a.setAttribute("onclick",`Funcs.openWindow(this, '${te.link}','${te.wname}','${te.type}','${te.data_from_lms}')`);
+						//assume that sequence is sequence of elements in incoming json array
+						//later may get seq from json objects
+						a.id = "seq"+seq;
+						sco_pages_seq.push(a.id);
+						seq += 1;
 						if(te.level > lev){
 							let li = document.createElement("li");
 							let ul = document.createElement("ul");
@@ -100,16 +108,62 @@
 				.catch(error=>console.log(error));
 			},
 
-			openWindow:function(winURL,winName,type,datafromlms)
+			
+			naviLast:function()
 			{
-				console.log(decodeURI(type))
+				current_page = sco_pages_seq[sco_pages_seq.length - 1];
+				document.getElementById(current_page).click();
+			},
+			naviFirst:function()
+			{
+				current_page = sco_pages_seq[0];
+				document.getElementById(current_page).click();
+			},
+			naviNext:function()
+			{
+				current_page = sco_pages_seq[Math.min(sco_pages_seq.indexOf(current_page)+1,sco_pages_seq.length - 1)];
+				document.getElementById(current_page).click();
+			},
+			naviPrev:function()
+			{
+				current_page = sco_pages_seq[Math.max(sco_pages_seq.indexOf(current_page)-1, 0)];
+				document.getElementById(current_page).click();
+			},
+			updateNavi:function(pg_id)
+			{
+				current_page = pg_id;
+				let bf = document.getElementById('nav_first');
+				let bl = document.getElementById('nav_last');
+				let bp = document.getElementById('nav_prev');
+				let bn = document.getElementById('nav_next');
+				
+				bf.disabled = false;
+				bl.disabled = false;
+				bp.disabled = false;
+				bn.disabled = false;
+				
+				//first page
+				if(current_page === sco_pages_seq[0])
+				{
+					bf.disabled = true;
+					bp.disabled = true;
+				}
+				//last page
+				if(current_page === sco_pages_seq[sco_pages_seq.length - 1])
+				{
+					bl.disabled = true;
+					bn.disabled = true;
+				}
+			},
+			
+			openWindow:function(el, winURL,winName,type,datafromlms)
+			{
+				Funcs.updateNavi(el.id)
 				if(decodeURI(type) === "SCORM 1.2"){
 					API = new SCOBOTAPIAdaptor12(decodeURI(datafromlms));
 				} else{
 					API_1484_11 = new SCOBot_API_1484_11(decodeURI(datafromlms));
 				}
-				
-
 				document.getElementById('scoiFrame').src = winURL;
 				appWindow = document.getElementById('scoiFrame').contentWindow;
 				appWindow.name = winName;
@@ -129,24 +183,6 @@
 
 
 
-
-<style>
-.container {
-    width:100%;
-    text-align:center;
-}
-
-.left {
-    float:left;
-    width:40%;
-}
-
-
-.right {
-    float:right;
-    width:100%;
-}
-</style>
 </head>
 <body>
 
@@ -164,17 +200,23 @@
 </div>
 
 
-</div class="right">
-
-<iframe id ="scoiFrame" src="/blank.html" height="600" width="800"></iframe>
-
+<div class="right" style="text-align: center;">
+	<iframe id ="scoiFrame" src="/blank.html" height="800" width="95%"></iframe>
+	<br/>
+	<span id="navi">
+		<button id="nav_first" onclick=Funcs.naviFirst() disabled="">&lt;&lt;</button>
+		<button id="nav_prev" onclick=Funcs.naviPrev() disabled="">&lt;</button>
+		<button id="nav_next" onclick=Funcs.naviNext() disabled="">&gt;</button>
+		<button id="nav_last" onclick=Funcs.naviLast() disabled="">&gt;&gt;</button>
+	</span>
 </div>
-</div>
+
+
 
 </body>
 
 <script>
-	window.onload = Funcs.getToc()
+	window.onload = Funcs.getToc();
 </script>
 
 </html>
