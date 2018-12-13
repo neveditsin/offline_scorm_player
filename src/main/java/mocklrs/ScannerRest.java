@@ -1,36 +1,92 @@
 package mocklrs;
 
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.sql.SQLException;
+import java.net.URISyntaxException;
 
-
+import java.util.Collection;
 
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import scanner.Module;
+import scanner.Project;
+import scanner.Scanner;
+import scanner.Tree;
+
 
 @Path("scanner")
 public class ScannerRest {
+	static Collection<Project> ps;
+	static {
+		try {
+			ps = Scanner.scanForProjects();
+		} catch (IOException | URISyntaxException e) {
+			e.printStackTrace();
+		}
+	}
+	JSONArray ptoc = new JSONArray();
+	private void travTree(Tree<Module> t, int lev) throws UnsupportedEncodingException {
+		JSONObject toc = new JSONObject();
+		toc.put("level", lev);
+		if(t.data.link == null) {
+			toc.put("header", t.data.name);
+		} else {	
+			//link
+			toc.put("link", t.data.link.substring(t.data.link.lastIndexOf("/projects/")));
+			//type
+			toc.put("type", t.data.type.replaceAll(" ", "%20"));
+			//data from lms
+			toc.put("data_from_lms", t.data.datafromlms.replaceAll(" ", "%20"));
+			//name
+			toc.put("name", t.data.name);
+		}
+		
+		ptoc.put(toc);
+		
+		if (t.children != null) {
+			for(Tree<Module> child : t.children) {
+				travTree(child, lev+1);
+			}
+		}
+	}
+	
 	
 	@GET
 	@Path("module")
 	@Produces(MediaType.APPLICATION_JSON)
-	public String process() throws UnsupportedEncodingException, JSONException, SQLException {
-		 JSONObject json = new JSONObject();
-		 JSONArray array=new JSONArray();
-		    array.put("1");
-		    array.put("2");
-		    json.put("friends", array);	
-		    return json.toString();
-
+	public String process(@QueryParam("hash") String project_hash) throws JSONException, UnsupportedEncodingException {    	
+ 	    //System.out.println(project_hash);
+ 	    ps.stream().forEach(p -> System.out.println(p.getHash()));
+		Project pr = ps.stream().filter(p -> Integer.toString(p.getHash()).equals(project_hash)).findFirst().get();
+		Tree<Module> t = pr.getModules();    		
+		ptoc = new JSONArray();
+		travTree(t,0);
+		return ptoc.toString();
 	}
 
+	
+	@GET
+	@Path("projects")
+	@Produces(MediaType.APPLICATION_JSON)
+	public String getProjects() throws JSONException {
+		JSONArray projs = new JSONArray();
+    	for(Project p : ps) {
+    		JSONObject project = new JSONObject();
+    		project.put("name", p.getName());
+    		project.put("hash", p.getHash());
+    		projs.put(project);
+    	}
+    	
+		return projs.toString();
+	}
 
 }

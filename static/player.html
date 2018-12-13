@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+<title>Offline SCORM player</title>
+
+<link rel="stylesheet" href="css/style.css">
+
+
+
+
+<script type="text/javascript">
+
+
+
+(function(){
+		
+		this.Funcs = {
+			
+			getProjects:function()
+			{
+				const Url="http://localhost:8080/lrs/scanner/projects";
+				const Parameters={
+					method:"GET"
+				};
+				fetch(Url, Parameters)
+				.then(res => res.json())
+				.then((out) => {
+					console.log('Output: ', out);
+					var toc = document.getElementById("projects");
+					for(var i in out)
+					{
+						let project = out[i];
+						console.log(name);
+						let a = document.createElement("a");
+						let br = document.createElement("br");
+						a.innerHTML = project.name;
+						a.setAttribute("href",`project.html?hash=${project.hash}`);
+						toc.appendChild(a);
+						toc.appendChild(br);
+						
+					}
+				}).catch(err => console.error(err));
+			},
+
+		}
+
+})();
+
+
+
+</script>
+
+
+
+
+
+</head>
+<body>
+
+<div id="header">
+	<h1>Offline SCORM player</h1>
+</div>
+
+<div>
+<a href="http://localhost:8080/lrs/scorm/report" class="button">Get Report</a>
+</div>
+<br/>
+<br/>
+<div id="projects">
+</div>
+
+</body>
+
+<script>
+	window.onload = Funcs.getProjects()
+</script>
+
+
+</html>

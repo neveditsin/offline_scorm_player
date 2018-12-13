@@ -46,7 +46,13 @@ public abstract class Project {
 	public Path getPath(){
 		return manifestPath;
 	}
-
-
+	
+	public int getHash(){
+		return manifestPath.hashCode();
+	}
+	
+	public String getName(){
+		return t.data.name;
+	}
 
 }
