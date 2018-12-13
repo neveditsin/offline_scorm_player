@@ -3,7 +3,7 @@ package mocklrs;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URISyntaxException;
-
+import java.net.URLEncoder;
 import java.util.Collection;
 
 
@@ -37,9 +37,7 @@ public class ScannerRest {
 	private void travTree(Tree<Module> t, int lev) throws UnsupportedEncodingException {
 		JSONObject toc = new JSONObject();
 		toc.put("level", lev);
-		if(t.data.link == null) {
-			toc.put("header", t.data.name);
-		} else {	
+		if(t.data.link != null) {	
 			//link
 			toc.put("link", t.data.link.substring(t.data.link.lastIndexOf("/projects/")));
 			//type
@@ -48,9 +46,10 @@ public class ScannerRest {
 			toc.put("data_from_lms", t.data.datafromlms.replaceAll(" ", "%20"));
 			//name
 			toc.put("name", t.data.name);
-		}
-		
-		ptoc.put(toc);
+			//wname
+			toc.put("wname", URLEncoder.encode(t.parent.data.isRoot? t.data.name : t.parent.data.name + ": " + t.data.name, "utf-8"));
+			ptoc.put(toc);
+		}		
 		
 		if (t.children != null) {
 			for(Tree<Module> child : t.children) {
@@ -64,8 +63,7 @@ public class ScannerRest {
 	@Path("module")
 	@Produces(MediaType.APPLICATION_JSON)
 	public String process(@QueryParam("hash") String project_hash) throws JSONException, UnsupportedEncodingException {    	
- 	    //System.out.println(project_hash);
- 	    ps.stream().forEach(p -> System.out.println(p.getHash()));
+ 	    //ps.stream().forEach(p -> System.out.println(p.getHash()));
 		Project pr = ps.stream().filter(p -> Integer.toString(p.getHash()).equals(project_hash)).findFirst().get();
 		Tree<Module> t = pr.getModules();    		
 		ptoc = new JSONArray();

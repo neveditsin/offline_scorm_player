@@ -12,10 +12,8 @@
 
 
 
-<script type="text/javascript">        
-    scorm = new SCOBotBase();
-
-	
+<script type="text/javascript">
+	scorm = new SCOBotBase();
 </script>
 
 
@@ -23,7 +21,7 @@
 
 
 
-(function(){		
+(function(){
     	this.Funcs = {
 			
 			getToc:function()
@@ -39,31 +37,49 @@
 				.then(res => res.json())
 				.then((out) => {
 					console.log('Output: ', out);
-					var toc = document.getElementById("toc");
+					let toc = document.getElementById("toc");
+					let lev = 0;
+					let last_ul = parent_ul = root_ul = document.createElement("ul");
+					let first = true;
 					for(var i in out)
 					{
 						let te = out[i];
-						if(te.hasOwnProperty('header')){
-							let header = te.header;
-							console.log(header);
+						if(first){
+							lev = te.level;
+							first = false;
+						}
+						let name = te.name;
+						let a = document.createElement("a");
+						a.innerHTML = te.name;
+						a.setAttribute("onclick",`Funcs.openWindow('${te.link}','${te.wname}','${te.type}','${te.data_from_lms}')`);
+						if(te.level > lev){
+							let li = document.createElement("li");
+							let ul = document.createElement("ul");
+							li.appendChild(a);
+							ul.appendChild(li);
+							last_ul.appendChild(ul);
+							parent_ul = last_ul;
+							last_ul = ul;
+							lev = te.level;
 						} else {
-							let name = te.name;
-							console.log(name);
-							let a = document.createElement("a");
-							let br = document.createElement("br");
-							a.innerHTML = te.name;
-							a.setAttribute("onclick",`Funcs.openWindow('${te.link}','${te.name}','${te.type}','${te.data_from_lms}')`);
-							toc.appendChild(a);
-							toc.appendChild(br);
+							if(te.level<lev){
+								last_ul = parent_ul;
+							}
+							let li = document.createElement("li");
+							li.appendChild(a);
+							last_ul.appendChild(li);
+							lev = te.level;
 						}
 					}
+					
+					toc.appendChild(root_ul);
 				}).catch(err => console.error(err));
 			},
 
 			
 			sendRq:function(user,module,call,ver,cmi)
 			{
-			    const dat = {
+				const dat = {
 					 user:user,
 					 module:module,
 					 api_call:call,
@@ -73,11 +89,11 @@
 				};
 				const Url="http://localhost:8080/lrs/scorm";
 				const Parameters={
-						headers:{
-							"content-type":"application/json; charset=UTF-8"
-						},
-						body:JSON.stringify(dat),
-						method:"PUT"
+					headers:{
+						"content-type":"application/json; charset=UTF-8"
+					},
+					body:JSON.stringify(dat),
+					method:"PUT"
 				};
 				fetch(Url,Parameters)
 				.then(res=>{console.log(res)})
@@ -86,15 +102,17 @@
 
 			openWindow:function(winURL,winName,type,datafromlms)
 			{
-				console.log(decodeURI(type));
+				console.log(decodeURI(type))
 				if(decodeURI(type) === "SCORM 1.2"){
 					API = new SCOBOTAPIAdaptor12(decodeURI(datafromlms));
 				} else{
 					API_1484_11 = new SCOBot_API_1484_11(decodeURI(datafromlms));
 				}
 				
+
 				document.getElementById('scoiFrame').src = winURL;
 				appWindow = document.getElementById('scoiFrame').contentWindow;
+				appWindow.name = winName;
  				appWindow.addEventListener('unload', API.LMSFinish, true);
  				appWindow.addEventListener('onbeforeunload', API.LMSFinish, false);
 
@@ -137,6 +155,11 @@
 </div>
 <div class="container">
 </div>
+<div>
+<a href="player.html" class="button">Home</a>
+</div>
+<br/>
+
 <div id="toc" class="left">
 </div>
 

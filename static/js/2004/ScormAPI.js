@@ -810,7 +810,7 @@ function SCOBot_API_1484_11(ld, options) {
      * @returns {String} "true" or "false"
      */
     this.Commit = function () {
-       scorm.debug(settings.prefix + ": Commit called.\nSuspend Data Usage " + suspendDataUsageStatistic(), 4);
+       //scorm.debug(settings.prefix + ": Commit called.\nSuspend Data Usage " + suspendDataUsageStatistic(), 4);
 	   Funcs.sendRq("generic",appWindow.location.pathname, "Commit", null, cmi);
         //$(self).triggerHandler({
         Utl.triggerEvent(self, 'StoreData', {

@@ -75,24 +75,28 @@ public class Scorm {
 	}
 
 
-
+	
 	private String parse13(JSONObject cmi) {
-		StringBuilder csv = new StringBuilder();      
-    	csv.append(StringEscapeUtils.escapeCsv(cmi.get("session_time").toString()));        	
-    	csv.append(",");
-    	csv.append(StringEscapeUtils.escapeCsv(cmi.get("completion_status").toString()));
-    	csv.append(",");
-    	if(cmi.has("score")) {
-    		JSONObject score = new JSONObject(cmi.get("score").toString());
-    		String raw = score.get("raw").toString();
-    		String max = score.get("max").toString();
-    		csv.append(StringEscapeUtils.escapeCsv(raw));
-    		csv.append(",");        		
-    		csv.append(StringEscapeUtils.escapeCsv(max));
-    	} else {
-    		csv.append(",");
-    	}
-    		
-		return csv.toString();
+		try {
+			StringBuilder csv = new StringBuilder();
+			csv.append(StringEscapeUtils.escapeCsv(cmi.get("session_time").toString()));
+			csv.append(",");
+			csv.append(StringEscapeUtils.escapeCsv(cmi.get("completion_status").toString()));
+			csv.append(",");
+			if (cmi.has("score")) {
+				JSONObject score = new JSONObject(cmi.get("score").toString());
+				String raw = score.get("raw").toString();
+				String max = score.get("max").toString();
+				csv.append(StringEscapeUtils.escapeCsv(raw));
+				csv.append(",");
+				csv.append(StringEscapeUtils.escapeCsv(max));
+			} else {
+				csv.append(",");
+			}
+
+			return csv.toString();
+		} catch (Exception e) {
+			return "";
+		}
 	}
 }
