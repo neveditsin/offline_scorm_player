@@ -81,6 +81,7 @@ public class ScannerRest {
     		JSONObject project = new JSONObject();
     		project.put("name", p.getName());
     		project.put("hash", p.getHash());
+    		project.put("type", p.getType());
     		projs.put(project);
     	}
     	

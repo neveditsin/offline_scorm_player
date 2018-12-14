@@ -39,7 +39,7 @@ public class Scorm {
 		try(BufferedWriter out = new BufferedWriter(new FileWriter(file))){
 			List<HashMap<String, Object>> db = DbUtils.getScormReport();
 			for(HashMap<String, Object> entry : db) {
-				if(entry.get("API_CALL").equals("Terminate")) {
+				if(entry.get("API_CALL").equals("Log")) {
 					JSONObject cmi = new JSONObject(entry.get("CMI").toString());		
 					out.append(StringEscapeUtils.escapeCsv(entry.get("DT").toString()));
 					out.append(",");
@@ -49,7 +49,10 @@ public class Scorm {
 					out.append(",");
 					out.append(parse13(cmi));
 					out.append("\r\n");
-				}		
+				} 
+				//else if (entry.get("API_CALL").equals("Commit")) {
+				//	System.out.println(entry);
+				//}
 				
 			}
 		}	
@@ -59,6 +62,14 @@ public class Scorm {
         response.header("Content-Disposition","attachment; filename=\"report\"");  
         return response.build();  
 	}
+	
+	
+	@GET
+	@Path("clr_report")
+	public void clearReport() throws SQLException, IOException  {
+		System.out.println(DbUtils.clearData());  
+	}
+	
 	
 	@PUT
 	@Consumes(MediaType.APPLICATION_JSON)

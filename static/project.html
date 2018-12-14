@@ -16,6 +16,8 @@
 	scorm = new SCOBotBase();
 	current_page = -1;
 	sco_pages_seq = [];
+	type = -1;
+	api = null;
 </script>
 
 
@@ -24,17 +26,20 @@
 
 
 (function(){
-    	this.Funcs = {
+		this.Funcs = {
 			
 			getToc:function()
 			{
 				const href = new URL(window.location.href);
 				const hash = href.searchParams.get("hash");
-				//console.log(hash);
+				type = href.searchParams.get("type");
 				const Url="http://localhost:8080/lrs/scanner/module?hash="+encodeURIComponent(hash);
 				const Parameters={
 					method:"GET"
 				};
+				//init appropriate API
+
+				
 				fetch(Url, Parameters)
 				.then(res => res.json())
 				.then((out) => {
@@ -133,22 +138,24 @@
 			updateNavi:function(pg_id)
 			{
 				current_page = pg_id;
-								
 				sco_pages_seq.forEach(function(el) {
-					document.getElementById(el).style.fontWeight = "normal"
-				});
+					document.getElementById(el).style.fontWeight = "normal";
+					});
 				document.getElementById(current_page).style.fontWeight = "bold";
+				//document.getElementById(current_page).style.fontSize = "large";
 				document.getElementById(current_page).style.color = "#813e83";
 				
 				let bf = document.getElementById('nav_first');
 				let bl = document.getElementById('nav_last');
 				let bp = document.getElementById('nav_prev');
 				let bn = document.getElementById('nav_next');
+
 				
 				bf.disabled = false;
 				bl.disabled = false;
 				bp.disabled = false;
 				bn.disabled = false;
+
 				
 				//first page
 				if(current_page === sco_pages_seq[0])
@@ -164,21 +171,41 @@
 				}
 			},
 			
+			
+			log:function()
+			{
+				Funcs.sendRq("generic", appWindow.location.pathname, "Log", null, api.getCmi());
+			},
+			
 			openWindow:function(el, winURL,winName,type,datafromlms)
 			{
-				Funcs.updateNavi(el.id)
+				
+				//(re)initialize API, call Terminzate for previous window
 				if(decodeURI(type) === "SCORM 1.2"){
+					if(typeof API !== 'undefined') {
+						api = API;
+						Funcs.log();
+						API.LMSFinish();
+						delete API;
+					}
 					API = new SCOBOTAPIAdaptor12(decodeURI(datafromlms));
 				} else{
+					if(typeof API_1484_11 !== 'undefined'){
+						api = API_1484_11;
+						Funcs.log();
+						API_1484_11.Terminate();
+						delete API_1484_11;
+					}
 					API_1484_11 = new SCOBot_API_1484_11(decodeURI(datafromlms));
 				}
+				;
+				
+				Funcs.updateNavi(el.id);
 				document.getElementById('scoiFrame').src = winURL;
 				appWindow = document.getElementById('scoiFrame').contentWindow;
 				appWindow.name = winName;
- 				appWindow.addEventListener('unload', API.LMSFinish, true);
- 				appWindow.addEventListener('onbeforeunload', API.LMSFinish, false);
 
-				return appWindow
+				return appWindow;
 			}
 
 		}

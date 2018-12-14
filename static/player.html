@@ -34,8 +34,9 @@
 						console.log(name);
 						let a = document.createElement("a");
 						let br = document.createElement("br");
+						let type = encodeURIComponent(project.type);
 						a.innerHTML = project.name;
-						a.setAttribute("href",`project.html?hash=${project.hash}`);
+						a.setAttribute("href",`project.html?hash=${project.hash}&type=${type}`);
 						toc.appendChild(a);
 						toc.appendChild(br);
 						

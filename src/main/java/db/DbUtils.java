@@ -17,6 +17,7 @@ public class DbUtils{
 	private static final String DBHOME = FileHelper.GetRootFolder() + "/.derby";
 	@SuppressWarnings("unused")
 	private static final String DBSHUTDW = "jdbc:derby:;shutdown=true";
+	private static final String QUERY_CLEAR_DB = "DELETE FROM scorm";
 	
 	private static AtomicReference<Connection> CON = new AtomicReference<Connection>();
 
@@ -56,10 +57,10 @@ public class DbUtils{
     	
 
 		final String deleteScormStorage = "DROP TABLE scorm";
-    	final String deleteFromScormStorage = "DELETE FROM scorm";
+    	
     	//System.out.println(execute(getConnection(), null, deleteScormStorage, ExecType.DMLDDL));
     	//System.out.println(execute(getConnection(), null, createScormStorage, ExecType.DMLDDL));
-    	System.out.println(execute(getConnection(), null, deleteFromScormStorage, ExecType.DMLDDL));
+    	System.out.println(execute(getConnection(), null, QUERY_CLEAR_DB, ExecType.DMLDDL));
     }
     
 	public static void main(String[] args) throws SQLException {
@@ -74,6 +75,13 @@ public class DbUtils{
 	@SuppressWarnings("unchecked")
 	public static List<HashMap<String,Object>> getScormReport() throws SQLException {	
 		return (List<HashMap<String, Object>>) execute(getConnection(), null, "SELECT * FROM scorm", ExecType.SELECT);
+	}
+	
+	
+	
+	public static int clearData() throws SQLException {
+		Connection con = getConnection();
+		return (Integer) execute(getConnection(), null, QUERY_CLEAR_DB, ExecType.DMLDDL);
 	}
 	
 	

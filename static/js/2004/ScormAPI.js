@@ -8,6 +8,10 @@ function SCOBOTAPIAdaptor12(ld, options){
 
 	this.cmi = scobot.cmi;
 	this.LMSInitialize = scobot.Initialize;
+	
+	this.getCmi = function () {
+		return scobot.getCmi();
+	};
 	this.LMSGetValue = function (key) {
 		var ig = false;
 		switch (key) {
@@ -827,12 +831,15 @@ function SCOBot_API_1484_11(ld, options) {
     this.Terminate = function () {
         // Could do things here like a LMS
         self.Commit(); // Force commit?
-		var loc = appWindow.location;
         Funcs.sendRq("generic",appWindow.location.pathname, "Terminate", null, cmi);
         settings.terminated = 1;
         settings.initialized = 0;
         return 'true';
     };
+	
+	this.getCmi = function () {
+		return cmi;
+	};
     /**
      * GetErrorString (SCORM) - Returns the error string from the associated Number
      * @param param number
