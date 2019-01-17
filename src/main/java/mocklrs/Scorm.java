@@ -12,10 +12,12 @@ import java.util.HashMap;
 import java.util.List;
 
 import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
@@ -28,11 +30,27 @@ import db.DbUtils;;
 
 @Path("scorm")
 public class Scorm {
+	private boolean isPasswordCorrect(String password, String user) throws SQLException {
+		String pwdhash = (String) DbUtils.getAuth().
+						stream().
+						filter(e -> e.get("USERNAME").equals(user)).
+						findFirst().
+						map(e -> e.get("PASSWORD")).
+						orElse("nil");
+	
+		return Integer.toString(password.hashCode()).equals(pwdhash);
+	}
+	
 	
 	@GET
 	@Path("report")
 	@Produces("text/csv") 
-	public Response report() throws SQLException, IOException  {		
+	public Response report(@QueryParam("pwd") String passwd) throws SQLException, IOException  {
+		if(!isPasswordCorrect(passwd, "logviewer")) {
+			return Response.status(403).build();
+		}
+		
+		
 		File file = File.createTempFile("report", ".tmp");
 		file.deleteOnExit();
 		
@@ -64,10 +82,16 @@ public class Scorm {
 	}
 	
 	
-	@GET
+	@DELETE
 	@Path("clr_report")
-	public void clearReport() throws SQLException, IOException  {
-		System.out.println(DbUtils.clearData());  
+	@Consumes(MediaType.TEXT_PLAIN)
+	public Response clearReport(String passwd) throws SQLException, IOException  {
+		if (isPasswordCorrect(passwd, "admin")) {
+			int count = DbUtils.clearData(); 
+			return Response.ok().build();
+		} else {
+			return Response.status(403).build();
+		}		
 	}
 	
 	

@@ -43,7 +43,59 @@
 					}
 				}).catch(err => console.error(err));
 			},
+			
+			clrReport:function()
+			{
+				var password=prompt('Please enter admin password:','');
+				const Url="http://localhost:8080/lrs/scorm/clr_report";
+				const Parameters={
+					method:"DELETE",
+					body:password
+				};
+				fetch(Url, Parameters)
+				.then(function(response) {
+					if (response.status == 200){
+						alert("Report data successfully cleared");
+						return;
+					} else if (response.status == 403){
+						alert("Password is incorrect");
+					}
+				}).catch(err => console.error(err));
+			},
 
+			getReport:function()
+			{
+				var password=prompt('Please enter log viewer password:','');
+				var Url= new URL("http://localhost:8080/lrs/scorm/report");
+				var params = {pwd:password}
+				Object.keys(params).forEach(key => Url.searchParams.append(key, params[key]))
+				
+				fetch(Url).then(function(response) {
+				if(response.ok) {
+					return response.blob();
+				} else if (response.status == 403){
+					alert("Password is incorrect");
+					return;
+				}
+				throw new Error('Network response was not ok.');
+				}).then(function(myBlob) { 
+				  
+				var a = document.createElement("a");
+				document.body.appendChild(a);
+				a.style = "display: none";
+				
+				var url = window.URL.createObjectURL(myBlob);
+				a.href = url;
+				a.download = "report.csv";
+				a.click();
+				window.URL.revokeObjectURL(url);
+				
+				  
+				}).catch(function(error) {
+				  console.log('There has been a problem with your fetch operation: ', error.message);
+				});
+			},
+			
 		}
 
 })();
@@ -64,7 +116,12 @@
 </div>
 
 <div>
-<a href="http://localhost:8080/lrs/scorm/report" class="button">Get Report</a>
+
+<button id="get_report" onclick=Funcs.getReport()>Get Report</button>
+</div>
+</br>
+<div>
+<button id="clr_report" onclick=Funcs.clrReport()>Clear Report Data</button>
 </div>
 <br/>
 <br/>

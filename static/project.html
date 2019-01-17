@@ -32,7 +32,7 @@
 			{
 				const href = new URL(window.location.href);
 				const hash = href.searchParams.get("hash");
-				type = href.searchParams.get("type");
+				//type = href.searchParams.get("type");
 				const Url="http://localhost:8080/lrs/scanner/module?hash="+encodeURIComponent(hash);
 				const Parameters={
 					method:"GET"
@@ -177,11 +177,32 @@
 				Funcs.sendRq("generic", appWindow.location.pathname, "Log", null, api.getCmi());
 			},
 			
-			openWindow:function(el, winURL,winName,type,datafromlms)
+			finish:function()
 			{
-				
-				//(re)initialize API, call Terminzate for previous window
 				if(decodeURI(type) === "SCORM 1.2"){
+					if(typeof API !== 'undefined') {
+						api = API;
+						Funcs.log();
+						API.LMSFinish();
+						delete API;
+					}
+				} else{
+					if(typeof API_1484_11 !== 'undefined'){
+						api = API_1484_11;
+						Funcs.log();
+						API_1484_11.Terminate();
+						delete API_1484_11;
+					}
+				}
+				window.location.href = "http://localhost:8080/player.html";
+				return;
+			},
+			
+			openWindow:function(el, winURL,winName,ptype,datafromlms)
+			{
+				type = ptype
+				
+				if(decodeURI(ptype) === "SCORM 1.2"){
 					if(typeof API !== 'undefined') {
 						api = API;
 						Funcs.log();
@@ -198,7 +219,6 @@
 					}
 					API_1484_11 = new SCOBot_API_1484_11(decodeURI(datafromlms));
 				}
-				;
 				
 				Funcs.updateNavi(el.id);
 				document.getElementById('scoiFrame').src = winURL;
@@ -227,7 +247,7 @@
 <div class="container">
 </div>
 <div>
-<a href="player.html" class="button">Home</a>
+<button id="home" onclick=Funcs.finish()>Exit Course</button>
 </div>
 <br/>
 

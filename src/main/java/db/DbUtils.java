@@ -54,13 +54,23 @@ public class DbUtils{
     			"cmi VARCHAR(32672),\r\n" + 
     			"CONSTRAINT primary_key PRIMARY KEY (id)\r\n" + 
     			")";
-    	
+		final String createAuthTable= "CREATE TABLE auth\r\n" + 
+    			"(\r\n" + 
+    			"id INTEGER NOT NULL GENERATED ALWAYS AS IDENTITY (START WITH 1, INCREMENT BY 1),\r\n" +
+    			"username VARCHAR(32),\r\n" + 
+    			"password VARCHAR(1024),\r\n" + 
+    			"CONSTRAINT primary_key_auth PRIMARY KEY (id)\r\n" + 
+    			")";
+		
 
 		final String deleteScormStorage = "DROP TABLE scorm";
+		final String deleteAuthTable = "DROP TABLE auth";
     	
     	//System.out.println(execute(getConnection(), null, deleteScormStorage, ExecType.DMLDDL));
     	//System.out.println(execute(getConnection(), null, createScormStorage, ExecType.DMLDDL));
-    	System.out.println(execute(getConnection(), null, QUERY_CLEAR_DB, ExecType.DMLDDL));
+    	//System.out.println(execute(getConnection(), null, QUERY_CLEAR_DB, ExecType.DMLDDL));
+		//System.out.println(execute(getConnection(), null, createAuthTable, ExecType.DMLDDL));
+		
     }
     
 	public static void main(String[] args) throws SQLException {
@@ -69,6 +79,8 @@ public class DbUtils{
 		//putScormData(new java.util.Date(), "SCORM 1.2", "call", "module", "wname", "cmi{}");
 
 		//System.out.println(execute(getConnection(), null, "SELECT * FROM scorm", ExecType.SELECT));
+		//createUserPassword("admin", Integer.toString("".hashCode()));
+		//createUserPassword("logviewer", Integer.toString("viewlog".hashCode()));
 
 	}
 	
@@ -77,6 +89,29 @@ public class DbUtils{
 		return (List<HashMap<String, Object>>) execute(getConnection(), null, "SELECT * FROM scorm", ExecType.SELECT);
 	}
 	
+	@SuppressWarnings("unchecked")
+	public static List<HashMap<String,Object>> getAuth() throws SQLException {	
+		return (List<HashMap<String, Object>>) execute(getConnection(), null, "SELECT * FROM auth", ExecType.SELECT);
+	}
+	
+	
+	//using simple hash code for pwd. TODO crypto hash
+	@SuppressWarnings("unchecked")
+	public static int createUserPassword(String user, String password) throws SQLException {
+		Connection con0 = getConnection();
+		PreparedStatement pst0 = con0.prepareStatement("DELETE from auth WHERE username=(?)");	
+		pst0.setString(1, user);
+		execute(con0, pst0, null, ExecType.DMLDDL);
+		
+		Connection con = getConnection();
+		PreparedStatement pst = con.prepareStatement("INSERT INTO auth (username, password) VALUES (?, ?)");	
+		pst.setString(1, user);
+		pst.setString(2, password);
+
+		execute(con, pst, null, ExecType.DMLDDL);
+		return 0;
+		
+	}
 	
 	
 	public static int clearData() throws SQLException {
@@ -85,7 +120,8 @@ public class DbUtils{
 	}
 	
 	
-	public static int putScormData(java.util.Date dt, String ver, String api_call, String module, String wname, String cmi) throws SQLException {
+	public static int putScormData(java.util.Date dt, String ver, String api_call, String module, String wname, String cmi) throws SQLException {	
+		
 		Connection con = getConnection();
 		PreparedStatement pst = con.prepareStatement("INSERT INTO scorm (dt, version, api_call, module, wname, cmi) VALUES (?, ?, ?, ?, ? ,?)");	
 		pst.setTimestamp(1, new Timestamp(dt.getTime()));
