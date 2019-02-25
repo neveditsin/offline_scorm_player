@@ -28,7 +28,7 @@ public class Scanner {
 	}
 	
 	public static Collection<Project> scanForProjects() throws IOException, URISyntaxException{
-		System.out.println(System.getProperty("os.name"));
+		//System.out.println(System.getProperty("os.name"));
 		ProtectionDomain d = Launcher.class.getProtectionDomain();
 		Collection<Path> manifests = getManifests(java.net.URLDecoder.decode(d.getCodeSource().
     			getLocation().toURI().

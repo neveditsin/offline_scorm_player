@@ -25,21 +25,24 @@ import Utils.FileHelper;
 
 
 public class Launcher {
+	private static boolean verboseMode = false;
 	
 	private static Tomcat initTomcat() throws IOException, ServletException {
 		File root = FileHelper.GetRootFolder();
+		
 		System.setProperty("org.apache.catalina.startup.EXIT_ON_INIT_FAILURE", "true");
+		if (!verboseMode) java.util.logging.Logger.getLogger("org.apache").setLevel(java.util.logging.Level.WARNING);
+		
 		Tomcat tomcat = new Tomcat();
 		Path tempPath = Files.createTempDirectory("tomcat-base-dir");
 		tomcat.setBaseDir(tempPath.toString());
 
-		// The port that we should run on can be set into an environment variable
-		// Look for that variable and default to 8080 if it isn't there.
 		String webPort = System.getenv("PORT");
 		if (webPort == null || webPort.isEmpty()) {
 			webPort = "8080";
 		}
-
+		
+		
 		tomcat.setPort(Integer.valueOf(webPort));
 
 		// File webContentFolder = new File(root.getAbsolutePath(), "src/main/webapp/");
@@ -47,12 +50,12 @@ public class Launcher {
 		if (!webContentFolder.exists()) {
 			webContentFolder = Files.createTempDirectory("default-doc-base").toFile();
 		}
+
 		StandardContext ctx = (StandardContext) tomcat.addWebapp("", webContentFolder.getAbsolutePath());
-		// Set execution independent of current thread context classloader
-		// (compatibility with exec:java mojo)
 		ctx.setParentClassLoader(Launcher.class.getClassLoader());
 
-		System.out.println("configuring app with basedir: " + webContentFolder.getAbsolutePath());
+		
+		if (verboseMode) System.out.println("Configuring app with basedir: " + webContentFolder.getAbsolutePath());
 
 		// Declare an alternative location for your "WEB-INF/classes" dir
 		File additionWebInfClassesFolder = new File(root.getAbsolutePath(), "classes/WEB-INF");
@@ -61,7 +64,7 @@ public class Launcher {
 		WebResourceSet resourceSet;
 		if (additionWebInfClassesFolder.exists()) {
 			resourceSet = new DirResourceSet(resources, "/WEB-INF", additionWebInfClassesFolder.getAbsolutePath(), "/");
-			System.out.println(
+			if (verboseMode) System.out.println(
 					"loading WEB-INF resources from as '" + additionWebInfClassesFolder.getAbsolutePath() + "'");
 		} else {
 			resourceSet = new EmptyResourceSet(resources);
@@ -74,7 +77,13 @@ public class Launcher {
 	
 
 	
-    public static void main(String[] args) throws URISyntaxException, IOException, ServletException, LifecycleException {  
+    public static void main(String[] args) throws URISyntaxException, IOException, ServletException, LifecycleException { 
+    	
+    	for (String arg : args) {
+    		if (arg.contains("-V") || arg.contains("-v")) {
+    			verboseMode = true;
+    		}
+    	}
       	
     	Tomcat tomcat = initTomcat();
     	
@@ -86,7 +95,8 @@ public class Launcher {
 				desktop.browse(new URI(url));
 			} catch (IOException | URISyntaxException e) {
 				// TODO Auto-generated catch block
-				e.printStackTrace();
+				//e.printStackTrace();
+				System.out.println("Please open your browser and go to " + url);
 			}
 		} else {
 			Runtime runtime = Runtime.getRuntime();
@@ -94,9 +104,12 @@ public class Launcher {
 				runtime.exec("xdg-open " + url);
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
-				e.printStackTrace();
+				//e.printStackTrace();
+				System.out.println("Please open your browser and go to " + url);
 			}
 		}
+		
+		System.out.println("Do not close this window until you finish your work");
 		
         tomcat.start();
         tomcat.getServer().await();
