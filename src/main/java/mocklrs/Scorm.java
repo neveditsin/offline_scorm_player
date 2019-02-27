@@ -55,6 +55,8 @@ public class Scorm {
 		file.deleteOnExit();
 		
 		try(BufferedWriter out = new BufferedWriter(new FileWriter(file))){
+			out.append(makeCsvHeader());
+			out.append("\r\n");
 			List<HashMap<String, Object>> db = DbUtils.getScormReport();
 			for(HashMap<String, Object> entry : db) {
 				if(entry.get("API_CALL").equals("Log")) {
@@ -65,7 +67,7 @@ public class Scorm {
 					out.append(",");
 					out.append(StringEscapeUtils.escapeCsv(entry.get("MODULE").toString()));
 					out.append(",");
-					out.append(parse13(cmi));
+					out.append(parse13(cmi, true));
 					out.append("\r\n");
 				} 
 				//else if (entry.get("API_CALL").equals("Commit")) {
@@ -111,11 +113,11 @@ public class Scorm {
 
 
 	
-	private String parse13(JSONObject cmi) {
+	private String parse13(JSONObject cmi, boolean withSuspData) {
 		try {
 			StringBuilder csv = new StringBuilder();
-			csv.append(StringEscapeUtils.escapeCsv(cmi.get("session_time").toString()));
-			csv.append(",");
+			//csv.append(StringEscapeUtils.escapeCsv(cmi.get("session_time").toString()));
+			//csv.append(",");
 			csv.append(StringEscapeUtils.escapeCsv(cmi.get("completion_status").toString()));
 			csv.append(",");
 			if (cmi.has("score")) {
@@ -128,10 +130,20 @@ public class Scorm {
 			} else {
 				csv.append(",");
 			}
+			
+			csv.append(",");
+			if(withSuspData && cmi.has("suspend_data")) {				
+				csv.append(StringEscapeUtils.escapeCsv(cmi.get("suspend_data").toString()));
+			}
 
 			return csv.toString();
 		} catch (Exception e) {
 			return "";
 		}
+	}
+	
+	private String makeCsvHeader() {
+		return "date,module,link,status,score,out_of,suspend_data";
+		
 	}
 }

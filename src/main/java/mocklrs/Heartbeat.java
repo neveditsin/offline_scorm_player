@@ -28,19 +28,21 @@ public class Heartbeat {
 
 	
     private static TimerTask task = new ExitTask();
-	static {
-	    long initialDelay = 1000L * 60 * 3; //4 minutes
-	    timer.schedule(task, initialDelay);
-	}
-    
 
-	private static final long hbdelay = 1000L * 45; //45 seconds
+
+	private static final long hbdelay = 1000L * 60; //45 seconds
 	
 	@GET
 	@Path("hb")
-	public Response hbRecd()  { 
-		task.cancel();
-		timer.purge();
+	public Response hbRecd()  {
+		try {
+			task.cancel();
+			timer.purge();
+		} catch (Exception e) {
+			//ignore
+		}
+
+		
 		task = new ExitTask();
 		timer.schedule(task, hbdelay);
         ResponseBuilder response = Response.ok();  
